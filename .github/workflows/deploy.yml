@@ -1,4 +1,4 @@
-name: Frontend CI/CD (VPS)
+name: Frontend CI/CD (Zero Downtime)
 
 on:
   push:
@@ -16,8 +16,11 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm ci
-      - run: npm run build
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js
+        run: npm run build
 
       - name: Upload build to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -31,3 +34,14 @@ jobs:
             package.json
             next.config.js
           target: /var/www/frontend/FreeInvoice
+
+      - name: Reload app with zero downtime
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/frontend/FreeInvoice
+            npm install --production
+            pm2 reload freeinvoice
