@@ -26,5 +26,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: build/*
+          source: |
+            .next
+            public
+            package.json
+            next.config.js
           target: /var/www/frontend/FreeInvoice
