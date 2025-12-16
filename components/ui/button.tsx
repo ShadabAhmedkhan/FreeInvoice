@@ -43,7 +43,10 @@ function Button({
   size,
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
+}: Omit<
+  React.ComponentProps<"button">,
+  "onDrag" | "onDragStart" | "onDragEnd"
+> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }) {
@@ -53,14 +56,15 @@ function Button({
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
-      {...((!asChild) ? {
+      {...(!asChild && {
         whileHover: { scale: 1.02 },
         whileTap: { scale: 0.98 },
-        transition: { type: "spring", stiffness: 400, damping: 17 }
-      } : {})}
-      {...props}
+        transition: { type: "spring", stiffness: 400, damping: 17 },
+      })}
+      {...(props as any)}
     />
   )
 }
+
 
 export { Button, buttonVariants }
