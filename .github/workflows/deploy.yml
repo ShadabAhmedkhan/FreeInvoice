@@ -1,42 +1,26 @@
-name: Deploy FreeInvoice Frontend
+name: Deploy FreeInvoice
 
 on:
   push:
-    branches:
-      - master
+    branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout Code
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      # 3️⃣ Install Dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # 4️⃣ Build Next.js (Static Export)
-      - name: Build project
-        run: npm run build
-
-      # 5️⃣ Deploy via SCP (UPLOAD `out/`)
-      - name: Deploy to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: 22
-
-          source: out/*
-          target: /var/www/frontend/FreeInvoice
-          rm: true
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd ${{ secrets.APP_PATH }}
+          git pull origin main
+          npm install
+          npm run build
+          pm2 restart free-invoice
