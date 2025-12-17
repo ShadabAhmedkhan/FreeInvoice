@@ -1,8 +1,9 @@
-name: Frontend CI/CD (Deploy Only)
+name: Frontend CI/CD (VPS)
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
@@ -10,34 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm install
+      - run: npm run build
 
-      - name: Build Next.js
-        run: npm run build
-
-      # ✅ SCP FROM RUNNER → VPS (correct direction)
       - name: Upload build to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: |
-            .next
-            public
-            package.json
-            package-lock.json
-            next.config.js
+          source: build/*
           target: /var/www/frontend/FreeInvoice
-          overwrite: true
-          tar_dereference: true
-
